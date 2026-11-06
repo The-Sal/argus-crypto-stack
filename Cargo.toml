@@ -1,0 +1,35 @@
+[package]
+name = "argus-crypto-stack"
+version = "0.1.0"
+edition = "2024"
+description = "Rust drop-in replacement for Lighter's Go signer dylib + Hyperliquid EIP-712 signing"
+
+[lib]
+name = "argus_crypto_stack"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Lighter engine: verified Rust port of lighter-go (tx types, Poseidon2, ECgFp5, Schnorr).
+# default-features = false -> no reqwest/tokio; we supply our own HTTP via the HttpClient trait.
+lighters = { version = "0.1.1", default-features = false }
+
+# Hyperliquid: secp256k1 ECDSA (RFC6979 deterministic) with recovery ids
+secp256k1 = { version = "0.30", features = ["recovery"] }
+# keccak-256 for EIP-712 / action hashes
+tiny-keccak = { version = "2", features = ["keccak"] }
+# Blocking HTTP for CheckClient (GET /api/v1/apikeys) — no async runtime
+ureq = { version = "3", features = ["json", "socks-proxy"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+libc = "0.2"
+hex = "0.4"
+
+[profile.release]
+opt-level = 3            # maximum optimizations (default for release)
+debug = false            # no debug info
+debug-assertions = false # disable debug‑only assertions
+overflow-checks = false  # disable integer‑overflow checks
+lto = "fat"              # more aggressive LTO than plain `true`
+codegen-units = 1        # maximize cross‑crate optimization
+strip = true             # strip debug symbols from binary
+rpath = false            # do not embed rpath in binary
